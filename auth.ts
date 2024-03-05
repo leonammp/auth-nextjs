@@ -1,5 +1,5 @@
 import "next-auth/jwt"
-import NextAuth from "next-auth"
+import NextAuth, { User } from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { UserRole } from "@prisma/client";
 
@@ -11,6 +11,10 @@ import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation
 declare module "next-auth" {
     interface Session {
         user: {
+            id?: string
+            name?: string | null
+            email?: string | null
+            image?: string | null
             role: UserRole
         }
     }
