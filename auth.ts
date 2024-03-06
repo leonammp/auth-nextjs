@@ -1,5 +1,5 @@
 import "next-auth/jwt"
-import NextAuth, { User } from "next-auth"
+import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { UserRole } from "@prisma/client";
 
@@ -11,18 +11,20 @@ import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation
 declare module "next-auth" {
     interface Session {
         user: {
-            id?: string
-            name?: string | null
-            email?: string | null
-            image?: string | null
-            role: UserRole
+            id?: string;
+            name?: string | null;
+            email?: string | null;
+            image?: string | null;
+            role: UserRole;
+            isTwoFactorEnabled: boolean;
         }
     }
 }
 
 declare module "next-auth/jwt" {
     interface JWT {
-        role?: UserRole
+        role?: UserRole;
+        isTwoFactorEnabled: boolean;
     }
 }
 
@@ -75,6 +77,10 @@ export const {
                 session.user.role = token.role;
             }
 
+            if (session.user) {
+                session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
+            }
+
             return session;
         },
         async jwt({ token }) {
@@ -85,6 +91,7 @@ export const {
             if (!existingUser) return token
             
             token.role = existingUser.role;
+            token.isTwoFactorEnable = existingUser.isTwoFactorEnabled;
 
             return token;
         }
