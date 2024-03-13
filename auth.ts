@@ -7,24 +7,29 @@ import { db } from "@/lib/db";
 import authConfig from "@/auth.config"
 import { getUserById } from "@/data/user";
 import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation";
+import { getAccountByUserId } from "./data/account";
 
 declare module "next-auth" {
     interface Session {
         user: {
-            id?: string;
-            name?: string | null;
-            email?: string | null;
+            id: string;
+            name: string | null;
+            email: string | null;
             image?: string | null;
             role: UserRole;
             isTwoFactorEnabled: boolean;
+            isOAuth: boolean;
         }
     }
 }
 
 declare module "next-auth/jwt" {
     interface JWT {
+        name: string | null;
+        email: string | null;
         role?: UserRole;
         isTwoFactorEnabled: boolean;
+        isOAuth: boolean;
     }
 }
 
@@ -78,7 +83,10 @@ export const {
             }
 
             if (session.user) {
+                session.user.name = token.name;
+                session.user.email = token.email as string;
                 session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
+                session.user.isOAuth = token.isOAuth;
             }
 
             return session;
@@ -90,8 +98,13 @@ export const {
 
             if (!existingUser) return token
             
+            const existingAccount = await getAccountByUserId(existingUser.id);
+
+            token.isOAuth = !!existingAccount;
+            token.name = existingUser.name;
+            token.email = existingUser.email;
             token.role = existingUser.role;
-            token.isTwoFactorEnable = existingUser.isTwoFactorEnabled;
+            token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
 
             return token;
         }
