@@ -51,8 +51,8 @@ export const RegisterForm = () => {
 
     return (
         <CardWrapper
-            headerLabel="Create an account"
-            backButtonLabel="Already have an account?"
+            headerLabel="Criar uma conta"
+            backButtonLabel="Já possui uma conta?"
             backButtonHref="/auth/login"
             showSocial
         >
@@ -67,12 +67,12 @@ export const RegisterForm = () => {
                             name="name"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Name</FormLabel>
+                                    <FormLabel>Nome</FormLabel>
                                     <FormControl>
                                         <Input
                                             {...field}
                                             disabled={isPending}
-                                            placeholder="John Doe"
+                                            placeholder="Nome"
                                         />
                                     </FormControl>
                                     <FormMessage/>
@@ -89,7 +89,7 @@ export const RegisterForm = () => {
                                         <Input
                                             {...field}
                                             disabled={isPending}
-                                            placeholder="jonh.doe@example.com"
+                                            placeholder="email@exemplo.com"
                                             type="email"
                                         />
                                     </FormControl>
@@ -102,7 +102,7 @@ export const RegisterForm = () => {
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Password</FormLabel>
+                                    <FormLabel>Senha</FormLabel>
                                     <FormControl>
                                         <Input
                                             {...field}
@@ -123,7 +123,7 @@ export const RegisterForm = () => {
                         type="submit"
                         className="w-full"
                     >
-                        Create an account
+                        Criar uma conta
                     </Button>
                 </form>
             </Form>
