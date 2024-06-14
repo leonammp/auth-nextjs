@@ -82,3 +82,48 @@ model TwoFactorConfirmation {
 
   @@unique([userId])
 }
+
+model Empresa {
+  codigo_cvm                Int  @id
+  ticker                    String? @unique
+  ticker_empresa            String?
+  razao_social              String?
+  nome_fantasia             String?
+  cnpj                      String?
+  setor                     String?
+  subsetor                  String?
+  atividade                 String?
+  website                   String?
+  cotacao                   String?
+  status                    String?
+  indicador_mercado         String?
+  mercado                   String?
+  escriturador              String?
+  escriturador_preferencial String?
+  ultima_data               String?
+  codigo_isin               String?
+  possui_emissoes           String?
+  possui_bdr                String?
+  tipo_bdr                  String?
+  descricao_categoria_bvmf  String?
+  nova_codigo_cvm           Int?
+
+  arquivos                  Arquivo[]
+}
+
+model Arquivo {
+  id              Int   @id @default(autoincrement())
+  codigo_cvm      Int
+  categoria       String?
+  tipo            String?
+  especie         String?
+  data_referencia DateTime?
+  data_entrega    DateTime
+  status          String?
+  versao          String?
+  modalidade      String?
+  assunto         String?
+  link_arquivo    String   @unique
+
+  empresa         Empresa  @relation(fields: [codigo_cvm], references: [codigo_cvm], onDelete: Cascade)
+}
