@@ -1,13 +1,17 @@
-"use client";
+import AtivosInfo from "@/components/ativos-info";
+import { fetchUserAtivos } from "@/actions/ativos";
 
-import { AtivosInfo } from "@/components/ativos-info";
-import { useCurrentUser } from "@/hooks/use-current-user";
-
-const AtivosPage = () => {
-    const user = useCurrentUser();
+const AtivosPage = async () => {
+    const data = await fetchUserAtivos();
 
     return (
-        <AtivosInfo />
+        <div className="flex justify-center p-4">
+            {data.status === "success" ? (
+                <AtivosInfo ativos={data.ativos}/>
+            ) : (
+                <p>Carregando...</p>
+            )}
+        </div>
     );
 }
 

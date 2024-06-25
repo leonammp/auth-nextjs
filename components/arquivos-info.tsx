@@ -1,25 +1,17 @@
 "use client";
 
 import {useState, useEffect} from "react";
+import { Arquivo, Empresa} from "@prisma/client";
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
 
-interface ArquivosInfoProps {
-    arquivos: {
-        id: number;
-        codigo_cvm: number;
-        empresa: { razao_social: string };
-        categoria: string | null;
-        tipo: string | null;
-        especie: string | null;
-        data_referencia: Date | null;
-        data_entrega: Date;
-        status: string | null;
-        versao: string | null;
-        modalidade: string | null;
-        assunto: string | null;
-        link_arquivo: string;
-    }[];
+interface ArquivoComEmpresa extends Arquivo {
+    empresa: Empresa;
 }
+
+interface ArquivosInfoProps {
+    arquivos: ArquivoComEmpresa[] | [];
+}
+
 
 export const ArquivosInfo = ({arquivos}: ArquivosInfoProps) => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +20,7 @@ export const ArquivosInfo = ({arquivos}: ArquivosInfoProps) => {
     useEffect(() => {
         setFilteredArquivos(
             arquivos.filter((arquivo) =>
-                arquivo.empresa.razao_social.toLowerCase().includes(searchTerm.toLowerCase())
+                arquivo.empresa.razao_social?.toLowerCase().includes(searchTerm.toLowerCase())
             )
         );
     }, [searchTerm, arquivos]);

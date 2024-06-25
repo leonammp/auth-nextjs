@@ -8,6 +8,6 @@ export const arquivos = async () => {
         return { status: "success", arquivos: response };
     } catch (error) {
         console.error(error);
-        return { status: "error", arquivos: [] };
+        return { status: "error", arquivos: []};
     }
 };

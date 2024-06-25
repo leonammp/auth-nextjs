@@ -1,146 +1,142 @@
-import { ArrowUpIcon, LayersIcon } from "@radix-ui/react-icons";
+"use client";
 
+import React, { useState, useEffect, useTransition } from 'react';
+import { Empresa as Ativo } from "@prisma/client";
+import { Button } from '@/components/ui/button';
+import { Input } from  '@/components/ui/input';
+import { AutoCompleteAtivos } from '@/components/auto-complete-ativos';
+import { fetchUserAtivos, fetchAtivos, addUserAtivo, removeUserAtivo } from '@/actions/ativos';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {FormError} from "@/components/form-error";
+import {FormSuccess} from "@/components/form-success";
 
-export const AtivosInfo = () => {
+interface AtivosInfoProps {
+    ativos: Ativo[];
+}
+
+const AtivosInfo = ({ ativos }: AtivosInfoProps) => {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filteredAtivo, setFilteredAtivo] = useState<Ativo[]>([]);
+    const [userAtivos, setUserAtivos] = useState<Ativo[]>(ativos);
+    const [allAtivos, setAllAtivos] = useState<Ativo[]>(ativos);
+    const [error, setError] = useState<string | undefined>("");
+    const [success, setSuccess] = useState<string | undefined>("");
+    const [isPending, startTransition] = useTransition();
+
+    // useEffect(() => {
+    //     fetchUserAtivos().then((data) => setUserAtivos(data.ativos));
+    //     fetchAtivos().then((data) => setAllAtivos(data.ativos));
+    // }, [ativos]);
+
+    useEffect(() => {
+        setFilteredAtivo(
+            userAtivos.filter((ativo) =>
+                ativo.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                ativo.ticker?.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+        );
+    }, [searchTerm, userAtivos]);
+
+    const handleAddAtivo = (ativo: Ativo) => {
+        startTransition(() => {
+            addUserAtivo(ativo.codigo_cvm)
+                .then((data) => {
+                    if (data?.error) {
+                        setError(data.error);
+                    } else {
+                        //setUserAtivos((prev) => [...prev, ativo]);
+                        setSuccess("Ativo adicionado com sucesso!" + ativo.codigo_cvm.toString());
+                    }
+                })
+                .catch(() => setError("Desculpe, algo deu errado!"));
+        });
+    };
+
+    const handleRemoveAtivo = (ativoId: number) => {
+        startTransition(() => {
+            removeUserAtivo(ativoId)
+                .then((data) => {
+                    if (data?.error) {
+                        setError(data.error);
+                    } else {
+                        setUserAtivos((prev) => prev.filter((ativo) => ativo.codigo_cvm !== ativoId));
+                        setSuccess(data.status);
+                    }
+                })
+                .catch(() => setError("Desculpe, algo deu errado!"));
+        });
+    };
+
     return (
-        <Card className="w-full shadow-md sm:max-h-[600px] sm:w-[600px]">
-            <CardHeader>
+        <Card className="w-full shadow-md sm:max-w-[800px]">
+            <CardHeader className="flex flex-col sm:flex-row justify-between items-center">
                 <p className="text-2xl font-semibold text-center">
                     Ativos
                 </p>
+                <Input
+                    type="text"
+                    placeholder="Pesquisar Empresa"
+                    className="mt-2 sm:mt-0 p-2 border rounded"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </CardHeader>
             <CardContent className="space-y-4 w-full max-h-[350px] overflow-y-auto sm:max-h-[500px]">
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        WEGE3
-                    </p>
-                    <Badge variant="success">
-                        + 12%
-                    </Badge>
+                <AutoCompleteAtivos
+                    suggestions={allAtivos}
+                    onSelection={handleAddAtivo}
+                />
+                {error && <FormError message={error}/>}
+                {success && <FormSuccess message={success}/>}
+                <div className="block sm:hidden">
+                    {filteredAtivo.map((ativo) => (
+                        <div key={ativo.codigo_cvm}
+                             className="flex flex-col items-start justify-between rounded-lg border p-3 shadow-sm space-y-2">
+                            <div className="flex flex-row items-center justify-between w-full">
+                                <p className="text-sm font-medium">Ticker:</p>
+                                <p>{ativo.ticker}</p>
+                            </div>
+                            <div className="flex flex-row items-center justify-between w-full">
+                                <p className="text-sm font-medium">Empresa:</p>
+                                <p>{ativo.razao_social}</p>
+                            </div>
+                            <div className="flex flex-row items-center justify-between w-full">
+                                <p className="text-sm font-medium">Arquivos:</p>
+                                <a href="#" className="text-blue-600 hover:underline">Ver Arquivos</a>
+                            </div>
+                            <Button onClick={() => handleRemoveAtivo(ativo.codigo_cvm)}>Remover</Button>
+                        </div>
+                    ))}
                 </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        ITSA4
-                    </p>
-                    <Badge variant="destructive">
-                        - 2%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        WEGE3
-                    </p>
-                    <Badge variant="success">
-                        + 12%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        ITSA4
-                    </p>
-                    <Badge variant="destructive">
-                        - 2%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        WEGE3
-                    </p>
-                    <Badge variant="success">
-                        + 12%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        ITSA4
-                    </p>
-                    <Badge variant="destructive">
-                        - 2%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        WEGE3
-                    </p>
-                    <Badge variant="success">
-                        + 12%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        ITSA4
-                    </p>
-                    <Badge variant="destructive">
-                        - 2%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        WEGE3
-                    </p>
-                    <Badge variant="success">
-                        + 12%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        ITSA4
-                    </p>
-                    <Badge variant="destructive">
-                        - 2%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        WEGE3
-                    </p>
-                    <Badge variant="success">
-                        + 12%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        ITSA4
-                    </p>
-                    <Badge variant="destructive">
-                        - 2%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        WEGE3
-                    </p>
-                    <Badge variant="success">
-                        + 12%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        ITSA4
-                    </p>
-                    <Badge variant="destructive">
-                        - 2%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        WEGE3
-                    </p>
-                    <Badge variant="success">
-                        + 12%
-                    </Badge>
-                </div>
-                <div className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <p className="text-sm font-medium">
-                        ITSA4
-                    </p>
-                    <Badge variant="destructive">
-                        - 2%
-                    </Badge>
+                <div className="hidden sm:block">
+                    <table className="w-full table-auto border-collapse">
+                        <thead>
+                        <tr>
+                            <th className="border p-2">Ticker</th>
+                            <th className="border p-2">Empresa</th>
+                            <th className="border p-2">Arquivos</th>
+                            <th className="border p-2">Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {filteredAtivo.map((ativo) => (
+                            <tr key={ativo.codigo_cvm} className="border">
+                                <td className="border p-2">{ativo.ticker}</td>
+                                <td className="border p-2">{ativo.razao_social}</td>
+                                <td className="border p-2">
+                                    <a href="#" className="text-blue-600 hover:underline">Ver Arquivos</a>
+                                </td>
+                                <td className="border p-2">
+                                    <Button onClick={() => handleRemoveAtivo(ativo.codigo_cvm)}>Remover</Button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
                 </div>
             </CardContent>
         </Card>
     );
 };
+
+export default AtivosInfo;
