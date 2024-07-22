@@ -1,16 +1,8 @@
-import {getAtivos} from "@/data/ativo";
+"use server";
+
+import {addUserAtivos, getAtivos, getUserAtivos, removeUserAtivos} from "@/data/ativo";
 
 export const fetchAtivos = async () => {
-    try {
-        const response = await getAtivos();
-        return { ativos: response };
-    } catch (error) {
-        console.error(error);
-        return { ativos: []};
-    }
-};
-
-export const fetchUserAtivos = async () => {
     try {
         const response = await getAtivos();
         return { status: 'success', ativos: response };
@@ -20,19 +12,29 @@ export const fetchUserAtivos = async () => {
     }
 };
 
-export const addUserAtivo = async (ativoId: number) => {
+export const fetchUserAtivos = async () => {
     try {
-        const response = await getAtivos();
-        return { success: "Ativo cadastrado com sucesso!", ativos: response };
+        const response = await getUserAtivos();
+        return { status: 'success', ativos: response };
     } catch (error) {
         console.error(error);
-        return { error: "Erro", ativos: []};
+        return { status: 'error', ativos: []};
+    }
+};
+
+export const addUserAtivo = async (ativoId: number) => {
+    try {
+        await addUserAtivos(ativoId);
+        return { success: "Ativo cadastrado com sucesso!"};
+    } catch (error) {
+        console.error(error);
+        return { error: "Erro" };
     }
 };
 
 export const removeUserAtivo = async (ativoId: number) => {
     try {
-        const response = await getAtivos();
+        const response = await removeUserAtivos(ativoId);
         return { status: "Ativo removido com sucesso", ativos: response };
     } catch (error) {
         console.error(error);

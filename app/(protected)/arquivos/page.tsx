@@ -1,8 +1,8 @@
 import { ArquivosInfo } from "@/components/arquivos-info";
-import { arquivos } from "@/actions/arquivos";
+import {arquivos, arquivosUsuarioEmpresa} from "@/actions/arquivos";
 
 const ArquivosPage = async () => {
-    const data = await arquivos();
+    const data = await arquivosUsuarioEmpresa();
 
     return (
         <div className="flex justify-center p-4">

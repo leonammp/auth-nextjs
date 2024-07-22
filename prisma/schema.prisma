@@ -1,7 +1,7 @@
 // prisma/schema.prisma
 datasource db {
-  provider  = "postgresql"
-  url  	    = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   // uncomment next line if you use Prisma <5.10
   // directUrl = env("DATABASE_URL_UNPOOLED")
 }
@@ -16,31 +16,32 @@ enum UserRole {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          UserRole @default(USER)
-  accounts      Account[]
-  isTwoFactorEnabled Boolean @default(false)
+  id                    String                 @id @default(cuid())
+  name                  String?
+  email                 String?                @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  role                  UserRole               @default(USER)
+  accounts              Account[]
+  isTwoFactorEnabled    Boolean                @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
+  UsuarioEmpresa        UsuarioEmpresa[]
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -48,27 +49,27 @@ model Account {
 }
 
 model VerificationToken {
-  id String @id @default(cuid())
-  email String
-  token String @unique
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
   expires DateTime
 
   @@unique([email, token])
 }
 
 model PasswordResetToken {
-  id String @id @default(cuid())
-  email String
-  token String @unique
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
   expires DateTime
 
   @@unique([email, token])
 }
 
 model TwoFactorToken {
-  id String @id @default(cuid())
-  email String
-  token String @unique
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
   expires DateTime
 
   @@unique([email, token])
@@ -78,13 +79,13 @@ model TwoFactorConfirmation {
   id String @id @default(cuid())
 
   userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId])
 }
 
 model Empresa {
-  codigo_cvm                Int  @id
+  codigo_cvm                Int     @id
   ticker                    String? @unique
   ticker_empresa            String?
   razao_social              String?
@@ -108,11 +109,12 @@ model Empresa {
   descricao_categoria_bvmf  String?
   nova_codigo_cvm           Int?
 
-  arquivos                  Arquivo[]
+  arquivos       Arquivo[]
+  UsuarioEmpresa UsuarioEmpresa[]
 }
 
 model Arquivo {
-  id              Int   @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   codigo_cvm      Int
   categoria       String?
   tipo            String?
@@ -123,7 +125,15 @@ model Arquivo {
   versao          String?
   modalidade      String?
   assunto         String?
-  link_arquivo    String   @unique
+  link_arquivo    String    @unique
 
-  empresa         Empresa  @relation(fields: [codigo_cvm], references: [codigo_cvm], onDelete: Cascade)
+  empresa Empresa @relation(fields: [codigo_cvm], references: [codigo_cvm], onDelete: Cascade)
+}
+
+model UsuarioEmpresa {
+  id         String  @id @default(cuid())
+  usuario_id String
+  codigo_cvm Int
+  usuario    User    @relation(fields: [usuario_id], references: [id])
+  empresa    Empresa @relation(fields: [codigo_cvm], references: [codigo_cvm])
 }

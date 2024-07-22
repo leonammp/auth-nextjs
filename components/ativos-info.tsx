@@ -1,79 +1,73 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from 'react';
-import { Empresa as Ativo } from "@prisma/client";
+import React, { useState, useEffect } from 'react';
+import {Empresa, Empresa as Ativo} from "@prisma/client";
 import { Button } from '@/components/ui/button';
 import { Input } from  '@/components/ui/input';
 import { AutoCompleteAtivos } from '@/components/auto-complete-ativos';
-import { fetchUserAtivos, fetchAtivos, addUserAtivo, removeUserAtivo } from '@/actions/ativos';
+import { addUserAtivo, removeUserAtivo } from '@/actions/ativos';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {FormError} from "@/components/form-error";
 import {FormSuccess} from "@/components/form-success";
 
 interface AtivosInfoProps {
     ativos: Ativo[];
+    usuarioEmpresas: Ativo[];
 }
 
-const AtivosInfo = ({ ativos }: AtivosInfoProps) => {
+const AtivosInfo = ({ ativos, usuarioEmpresas}: AtivosInfoProps) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredAtivo, setFilteredAtivo] = useState<Ativo[]>([]);
-    const [userAtivos, setUserAtivos] = useState<Ativo[]>(ativos);
-    const [allAtivos, setAllAtivos] = useState<Ativo[]>(ativos);
+    const [userAtivos, setUserAtivos] = useState<Ativo[]>(usuarioEmpresas ?? []);
     const [error, setError] = useState<string | undefined>("");
     const [success, setSuccess] = useState<string | undefined>("");
-    const [isPending, startTransition] = useTransition();
-
-    // useEffect(() => {
-    //     fetchUserAtivos().then((data) => setUserAtivos(data.ativos));
-    //     fetchAtivos().then((data) => setAllAtivos(data.ativos));
-    // }, [ativos]);
+    const allAtivos = ativos;
 
     useEffect(() => {
-        setFilteredAtivo(
-            userAtivos.filter((ativo) =>
-                ativo.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                ativo.ticker?.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-        );
+        if (userAtivos.length) {
+            setFilteredAtivo(
+                userAtivos.filter((ativo) =>
+                    ativo.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    ativo.ticker?.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+            );
+        }
     }, [searchTerm, userAtivos]);
 
     const handleAddAtivo = (ativo: Ativo) => {
-        startTransition(() => {
-            addUserAtivo(ativo.codigo_cvm)
-                .then((data) => {
-                    if (data?.error) {
-                        setError(data.error);
-                    } else {
-                        //setUserAtivos((prev) => [...prev, ativo]);
-                        setSuccess("Ativo adicionado com sucesso!" + ativo.codigo_cvm.toString());
-                    }
-                })
-                .catch(() => setError("Desculpe, algo deu errado!"));
-        });
+        addUserAtivo(ativo.codigo_cvm)
+            .then((data) => {
+                console.log(data)
+                if (data?.error) {
+                    setError(data.error);
+                } else {
+                    setUserAtivos((prev) => [...prev, ativo]);
+                    setSuccess("Ativo adicionado com sucesso!");
+                }
+            })
+            .catch(() => setError("Desculpe, algo deu errado!"));
     };
 
     const handleRemoveAtivo = (ativoId: number) => {
-        startTransition(() => {
-            removeUserAtivo(ativoId)
-                .then((data) => {
-                    if (data?.error) {
-                        setError(data.error);
-                    } else {
-                        setUserAtivos((prev) => prev.filter((ativo) => ativo.codigo_cvm !== ativoId));
-                        setSuccess(data.status);
-                    }
-                })
-                .catch(() => setError("Desculpe, algo deu errado!"));
-        });
+        removeUserAtivo(ativoId)
+            .then((data) => {
+                if (data?.error) {
+                    setError(data.error);
+                } else {
+                    setUserAtivos((prev) => prev.filter((ativo) => ativo.codigo_cvm !== ativoId));
+                    setSuccess(data.status);
+                }
+            })
+            .catch(() => setError("Desculpe, algo deu errado!"));
     };
 
     return (
         <Card className="w-full shadow-md sm:max-w-[800px]">
             <CardHeader className="flex flex-col sm:flex-row justify-between items-center">
                 <p className="text-2xl font-semibold text-center">
-                    Ativos
+                    Ativos ({userAtivos.length})
                 </p>
-                <Input
+                <input
                     type="text"
                     placeholder="Pesquisar Empresa"
                     className="mt-2 sm:mt-0 p-2 border rounded"
