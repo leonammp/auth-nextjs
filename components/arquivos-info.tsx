@@ -9,7 +9,7 @@ interface ArquivoComEmpresa extends Arquivo {
 }
 
 interface ArquivosInfoProps {
-    arquivos: ArquivoComEmpresa[] | [];
+    arquivos: ArquivoComEmpresa[];
 }
 
 
@@ -21,6 +21,8 @@ export const ArquivosInfo = ({arquivos}: ArquivosInfoProps) => {
         setFilteredArquivos(
             arquivos.filter((arquivo) =>
                 arquivo.empresa.razao_social?.toLowerCase().includes(searchTerm.toLowerCase())
+                ||
+                arquivo.empresa.ticker?.toLowerCase().includes(searchTerm.toLowerCase())
             )
         );
     }, [searchTerm, arquivos]);
@@ -29,7 +31,7 @@ export const ArquivosInfo = ({arquivos}: ArquivosInfoProps) => {
         <Card className="w-full shadow-md sm:max-w-[800px]">
             <CardHeader className="flex flex-col sm:flex-row justify-between items-center">
                 <p className="text-2xl font-semibold text-center">
-                    Arquivos
+                    Arquivos ({arquivos.length})
                 </p>
                 <input
                     type="text"
@@ -45,8 +47,8 @@ export const ArquivosInfo = ({arquivos}: ArquivosInfoProps) => {
                         <div key={arquivo.id}
                              className="flex flex-col items-start justify-between rounded-lg border p-3 shadow-sm space-y-2">
                             <div className="flex flex-row items-center justify-between w-full">
-                                <p className="text-sm font-medium">Empresa:</p>
-                                <p>{arquivo.empresa.razao_social}</p>
+                                <p className="text-sm font-medium">Ticker:</p>
+                                <p>{arquivo.empresa.ticker}</p>
                             </div>
                             <div className="flex flex-row items-center justify-between w-full">
                                 <p className="text-sm font-medium">Data de Entrega:</p>
@@ -65,35 +67,27 @@ export const ArquivosInfo = ({arquivos}: ArquivosInfoProps) => {
                     ))}
                 </div>
                 <div className="hidden sm:block">
-                    <table className="w-full table-auto border-collapse">
-                        <thead>
-                        <tr>
-                            <th className="border p-2">Empresa</th>
-                            <th className="border p-2">Data de Entrega</th>
-                            <th className="border p-2">Link do Arquivo</th>
-                        </tr>
-                        </thead>
-                        <tbody>
+                    <div className="space-y-4">
                         {filteredArquivos.map((arquivo) => (
-                            <>
-                                <tr key={arquivo.id} className="border">
-                                    <td className="border p-2">{arquivo.empresa.razao_social}</td>
-                                    <td className="border p-2">{new Date(arquivo.data_entrega).toLocaleDateString()}</td>
-                                    <td className="border p-2">
-                                        <a href={arquivo.link_arquivo} target="_blank"
-                                           className="text-blue-600 hover:underline">Acessar Arquivo</a>
-                                    </td>
-                                </tr>
-                                <tr key={arquivo.id + "-assunto"} className="border mb-2">
-                                    <td className="border p-2" colSpan={3}>
-                                        <span className="font-medium">Assunto: </span>
-                                        {arquivo.assunto || "N/A"}
-                                    </td>
-                                </tr>
-                            </>
+                            <a href={arquivo.link_arquivo} target="_blank" title={arquivo.assunto ?? ''} key={arquivo.id} className="p-1">
+                                <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <p className="font-bold">
+                                            {arquivo.empresa.ticker}
+                                        </p>
+                                        <p className="truncate" style={{maxWidth: '50ch'}}>
+                                            {arquivo.assunto || "N/A"}
+                                        </p>
+                                    </div>
+                                    <div className="text-right space-y-0.5">
+                                        <div>
+                                            {new Date(arquivo.data_entrega).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
                         ))}
-                        </tbody>
-                    </table>
+                    </div>
                 </div>
             </CardContent>
         </Card>

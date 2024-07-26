@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+import {db} from "@/lib/db";
 import {currentUser} from "@/lib/auth";
 
 export const getArquivos = async () => {
@@ -16,21 +16,24 @@ export const getArquivos = async () => {
 
 export const getArquivosUsuarioEmpresa = async () => {
     try {
-
         const user = await currentUser();
 
         if (user?.id) {
             return await db.arquivo.findMany({
-                include: {
+                where: {
                     empresa: {
-                        include: {
-                            usuarios: {
-                                where: {
-                                    usuario_id: user.id
-                                }
-                            }
-                        }
+                        UsuarioEmpresa: {
+                            some: {
+                                usuario_id: user.id,
+                            },
+                        },
                     },
+                },
+                include: {
+                    empresa: true,
+                },
+                orderBy: {
+                    data_entrega: "desc",
                 }
             });
         }
